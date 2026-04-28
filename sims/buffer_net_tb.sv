@@ -31,8 +31,7 @@ module buffer_net_tb;
 
     integer pass_count, fail_count;
 
-    // ------------------------------------------------------------------
-    // Matrices we will use
+    // Matrices used
     //
     // A (row major serial order):
     //   1  2  3  4    row 0
@@ -60,9 +59,8 @@ module buffer_net_tb;
     //   cycle 5: a_row=[0, 8,11,14]   row 0 done
     //   cycle 6: a_row=[0, 0,12,15]   row 1 done
     //   cycle 7: a_row=[0, 0, 0,16]   row 2 done
-    // ------------------------------------------------------------------
 
-    // Packed arrays for easy feeding
+    // Packed arrays 
     logic signed [7:0] A_flat [0:N*N-1];
     logic signed [7:0] B_flat [0:N*N-1];
 
@@ -117,7 +115,6 @@ module buffer_net_tb;
         pass_count = 0;
         fail_count = 0;
 
-        // Initialise flat arrays
         // A row major: 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
         for (int i = 0; i < N*N; i++)
             A_flat[i] = i + 1;
@@ -126,15 +123,11 @@ module buffer_net_tb;
         for (int i = 0; i < N*N; i++)
             B_flat[i] = i + 1;
 
-        $display("\n============================================");
         $display("  BUFFER_NET TESTBENCH  N=%0d", N);
-        $display("============================================\n");
 
         apply_reset();
 
-        // ==============================================================
         // TEST 1 - Feed matrix A serially
-        // ==============================================================
         $display("--- TEST 1: Load matrix A ---");
 
         @(negedge clk);
@@ -149,13 +142,13 @@ module buffer_net_tb;
         a_valid = 1'b0;
         @(posedge clk); #1;
 
-        // Check a_loaded fired
+        // Checking a_loaded fired
         if (dut.a_loaded === 1'b1)
             $display("  PASS | a_loaded high after %0d bytes", N*N);
         else
             $display("  FAIL | a_loaded not high");
 
-        // Peek inside a_reg and verify
+        // Peeking inside a_reg and verifying
         $display("  Checking a_reg contents:");
         for (int row = 0; row < N; row++) begin
             for (int col = 0; col < N; col++) begin
@@ -170,9 +163,7 @@ module buffer_net_tb;
             end
         end
 
-        // ==============================================================
         // TEST 2 - Feed matrix B serially, check data separator
-        // ==============================================================
         $display("\n--- TEST 2: Load matrix B (data separator) ---");
 
         @(negedge clk);
@@ -192,14 +183,10 @@ module buffer_net_tb;
         else
             $display("  FAIL | b_loaded not high");
 
-        // Check b_reg - should be column organised
-        // b_reg[j][k] = B[k][j] = column j, element k
         $display("  Checking b_reg (should be column organised):");
         for (int col = 0; col < N; col++) begin
             $display("  b_reg[%0d] (col %0d of B):", col, col);
             for (int row = 0; row < N; row++) begin
-                // B[row][col] in row major = flat index row*N+col
-                // value = row*N + col + 1
                 logic signed [7:0] expected;
                 expected = row * N + col + 1;
                 if (dut.b_reg[col][row] === expected)
@@ -211,7 +198,6 @@ module buffer_net_tb;
             end
         end
 
-        // ==============================================================
         // TEST 3 - Staggered output
         // Both loaded - compute_started should fire
         // Watch a_row and b_col for 7 cycles
@@ -229,11 +215,8 @@ module buffer_net_tb;
         // After posedge 1: [1,  0,  0,  0]  col0[0]=B[0][0]=1
         // After posedge 2: [2,  5,  0,  0]  
         // etc.
-        // ==============================================================
         $display("\n--- TEST 3: Staggered output pattern ---");
-        $display("  Waiting for compute_started...");
 
-        // Wait for compute to begin (both loaded triggers it)
         repeat(3) @(posedge clk);
 
         $display("  Watching output for %0d cycles:", 2*N-1);
@@ -265,16 +248,11 @@ module buffer_net_tb;
             $display("");
         end
 
-        // ==============================================================
         // TEST 4 - Verify specific values
-        // Check a few key positions manually
-        // ==============================================================
         $display("--- TEST 4: Specific value checks ---");
 
-        // Restart
         apply_reset();
 
-        // Load A
         @(negedge clk); a_valid = 1;
         for (int i = 0; i < N*N; i++) begin
             a_in = i + 1;
@@ -282,11 +260,7 @@ module buffer_net_tb;
         end
         a_valid = 0;
 
-        // Load B simultaneously
-        @(negedge clk); b_valid = 1;
-        // rewind - load B from beginning
-        // (need to reset first, so load both together this time)
-
+       @(negedge clk); b_valid = 1;
         apply_reset();
 
         // Load A and B simultaneously
@@ -304,7 +278,6 @@ module buffer_net_tb;
         a_valid = 1'b0;
         b_valid = 1'b0;
 
-        // Wait for compute to start
         repeat(2) @(posedge clk);
 
         $display("  Verifying cycle by cycle:");
@@ -369,9 +342,7 @@ module buffer_net_tb;
             check_a_row(exp, "cycle7 a_row=[0,0,0,16]");
         end
 
-        // ==============================================================
         // TEST 5 - load signal fires at end
-        // ==============================================================
         $display("\n--- TEST 5: load signal ---");
         @(posedge clk); #1;
         if (load === 1'b1)
@@ -379,9 +350,7 @@ module buffer_net_tb;
         else
             $display("  FAIL | load did not fire");
 
-        // ==============================================================
         // Final report
-        // ==============================================================
         $display("\n============================================");
         $display("  RESULTS: %0d passed | %0d failed",
                   pass_count, fail_count);
