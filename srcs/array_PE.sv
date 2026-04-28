@@ -19,8 +19,8 @@ module array_PE #(parameter N=`numb)(
     genvar i,j;
     generate
         for(i=0;i<N;i++)begin : edge_connect
-            assign a_wire[i][0] = a_in[i];    // left edge row i
-            assign b_wire[0][i] = b_in[i];    // top edge col i
+            assign a_wire[i][0] = a_in[i];  
+            assign b_wire[0][i] = b_in[i];    
             assign v_wire[i][0] = valid_in[i];
         end
     endgenerate
