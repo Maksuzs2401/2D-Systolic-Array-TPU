@@ -15,7 +15,7 @@ module mac_unit (
 );
     
     (* use_dsp = "yes" *) logic signed [`prod_width-1:0]    prod_res;
-    logic signed [`accu_width-1:0]    accu_reg;
+    logic signed                       [`accu_width-1:0]    accu_reg;
     
     always_comb begin
         prod_res = a_reg * b_reg;
