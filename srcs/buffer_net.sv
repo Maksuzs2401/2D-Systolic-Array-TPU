@@ -23,9 +23,9 @@ module buffer_net #(parameter N =`numb)(
     logic [$clog2(N*N)-1:0]    b_cnt;
     logic                      b_loaded;
     
-    logic [$clog2(N)-1:0]      k          [0:N-1]; // k counter per row
-    logic                      row_active [0:N-1]; // is row shifting?
-    logic [$clog2(N):0]      start_cnt;          // global start counter
+    logic [$clog2(N)-1:0]      k          [0:N-1]; 
+    logic                      row_active [0:N-1]; 
+    logic [$clog2(N):0]      start_cnt;          
     logic                      compute_started;
     
     always_ff @(posedge clk)begin
@@ -83,7 +83,6 @@ module buffer_net #(parameter N =`numb)(
             if (start_cnt < N)
                 start_cnt <= start_cnt + 1;
 
-            // Done when last row finishes
             if (row_active[N-1] && k[N-1] == N-1)
                 load <= 1'b1;
         end else load <= 1'b0;
