@@ -13,8 +13,6 @@ module output_stage #(parameter N=`numb)(
     localparam done = N;
     logic [$clog2(done+1)-1:0] count;
     logic                      counting;
-   // logic signed [`out_width-1:0]temp_res[0:N-1][0:N-1];
-
     
     always_ff @(posedge clk) begin
         if (!rst_n) begin
@@ -41,6 +39,4 @@ module output_stage #(parameter N=`numb)(
             end
         end
       end
-       
-      //assign result = temp_res;
 endmodule
