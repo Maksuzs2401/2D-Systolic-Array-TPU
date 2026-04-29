@@ -120,7 +120,7 @@ It makes the IP compliant with any other system working on AXI4-S protocol.
 
 ---
 ## ARRAY DIAGRAM
-<img width="1000" height="700" alt="system_arch_systolic_array" src="https://github.com/user-attachments/assets/c4b25c7d-4933-4bb2-b43d-553d9289885c" />
+<img width="1000" height="800" alt="Untitled Diagram drawio (2)" src="https://github.com/user-attachments/assets/c2bd0842-95da-463a-8048-3362b22dd9b7" />
 
 ## RESULTS
 -FLOORPLANNING 
