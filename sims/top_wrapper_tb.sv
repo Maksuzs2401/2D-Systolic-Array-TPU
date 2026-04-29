@@ -1,25 +1,21 @@
 `timescale 1ns / 1ps
 `include "config.vh"
 
-module top_wrapper_tb; // Renamed to match the new wrapper
+module top_wrapper_tb; 
     localparam N = `numb;
     
-    // Global Signals
     logic                      clk, rst_n;
     
-    // AXI-Stream SLAVE (Driving data INTO the wrapper)
     logic                      s_axis_tvalid;
     logic signed [15:0]        s_axis_tdata;
     logic                      s_axis_tlast;
     logic                      s_axis_tready;
     
-    // AXI-Stream MASTER (Receiving data FROM the wrapper)
     logic signed [31:0]        m_axis_tdata;
     logic                      m_axis_tvalid;
     logic                      m_axis_tlast;
     logic                      m_axis_tready;
     
-    // Internal 2D Array to store the serial stream for checking
     logic signed [31:0]        result_matrix [0:N-1][0:N-1];
 
     // Instantiate the AXI Wrapper
@@ -37,7 +33,7 @@ module top_wrapper_tb; // Renamed to match the new wrapper
     );
 
     initial clk = 0;
-    always #2.5 clk = ~clk;
+    always #2.5 clk = ~clk;  // Final modules tested at 200MHz
 
     integer pass_count, fail_count;
     integer cycle_counter;
@@ -49,9 +45,7 @@ module top_wrapper_tb; // Renamed to match the new wrapper
         else        cycle_counter <= cycle_counter + 1;
     end
 
-    // ------------------------------------------------------------------
     // Software reference model
-    // ------------------------------------------------------------------
     function automatic logic signed [31:0] ref_C(
         input logic signed [7:0] A [0:N-1][0:N-1],
         input logic signed [7:0] B [0:N-1][0:N-1],
@@ -64,23 +58,19 @@ module top_wrapper_tb; // Renamed to match the new wrapper
         return sum;
     endfunction
 
-    // ------------------------------------------------------------------
     // Task: reset
-    // ------------------------------------------------------------------
     task apply_reset();
         rst_n         = 0;
         s_axis_tvalid = 0;
         s_axis_tdata  = 0;
         s_axis_tlast  = 0;
-        m_axis_tready = 0; // TB is not ready to receive yet
+        m_axis_tready = 0; 
         repeat(4) @(posedge clk);
         @(negedge clk);
         rst_n = 1;
     endtask
 
-    // ------------------------------------------------------------------
     // Task: feed both matrices over AXI-Stream
-    // ------------------------------------------------------------------
     task feed_matrices(
         input logic signed [7:0] A [0:N-1][0:N-1],
         input logic signed [7:0] B [0:N-1][0:N-1]
@@ -89,15 +79,15 @@ module top_wrapper_tb; // Renamed to match the new wrapper
         s_axis_tvalid = 1'b1;
         
         for (int i = 0; i < N*N; i++) begin
-            // Pack B into the top 8 bits, A into the bottom 8 bits!
+            // Packing B into the top 8 bits, A into the bottom 8 bits!
             s_axis_tdata = {B[i/N][i%N], A[i/N][i%N]};
             
-            // Assert TLAST on the very last element
+            // Asserting TLAST on the very last element
             s_axis_tlast = (i == (N*N - 1)) ? 1'b1 : 1'b0;
             
             @(posedge clk);
             
-            // Wait if the wrapper's FIFO/Buffer is ever full (TREADY goes low)
+            // Waiting if the wrapper's FIFO/Buffer is ever full (TREADY goes low)
             while (!s_axis_tready) @(posedge clk);
             
             @(negedge clk);
@@ -107,9 +97,7 @@ module top_wrapper_tb; // Renamed to match the new wrapper
         s_axis_tlast  = 1'b0;
     endtask
 
-    // ------------------------------------------------------------------
     // Task: COLLECT SERIAL RESULTS OVER AXI-STREAM
-    // ------------------------------------------------------------------
     task collect_results(output logic timed_out);
         integer elem;
         integer timeout_cnt;
@@ -145,13 +133,9 @@ module top_wrapper_tb; // Renamed to match the new wrapper
         m_axis_tready = 1'b0; 
     endtask
 
-    // ------------------------------------------------------------------
-    // Task: PRINT MATRIX VISUALLY
-    // ------------------------------------------------------------------
+    // Task: PRINT MATRIX
     task print_result_matrix(input string title);
-        $display("\n==========================================================================================================");
         $display("  MATRIX OUTPUT: %s", title);
-        $display("==========================================================================================================");
         for (int i = 0; i < N; i++) begin
             $write("  Row %2d: ", i);
             for (int j = 0; j < N; j++) begin
@@ -162,9 +146,7 @@ module top_wrapper_tb; // Renamed to match the new wrapper
         $display("==========================================================================================================\n");
     endtask
 
-    // ------------------------------------------------------------------
     // Task: verify result against reference
-    // ------------------------------------------------------------------
     task verify_result(
         input logic signed [7:0] A [0:N-1][0:N-1],
         input logic signed [7:0] B [0:N-1][0:N-1],
@@ -187,18 +169,14 @@ module top_wrapper_tb; // Renamed to match the new wrapper
         end
     endtask
 
-    // ------------------------------------------------------------------
     // Main test
-    // ------------------------------------------------------------------
     logic timed_out;
     initial begin
         pass_count = 0;
         fail_count = 0;
         
-        $display("\n============================================");
         $display("  AXI-STREAM WRAPPER TESTBENCH  N=%0d", N);
         $display("  Simulating DMA Feed and Read");
-        $display("============================================\n");
 
         // TEST 1
         $display("--- TEST 1: Identity × Random ---");
@@ -249,9 +227,7 @@ module top_wrapper_tb; // Renamed to match the new wrapper
         end
 
         // Final report
-        $display("\n============================================");
         $display("  RESULTS: %0d passed | %0d failed", pass_count, fail_count);
-        $display("============================================");
         if (fail_count == 0)
             $display("  ALL AXI TESTS PASSED - Ready for IP Packager \n");
         else
@@ -267,7 +243,7 @@ module top_wrapper_tb; // Renamed to match the new wrapper
 
     initial begin
         #5000000;
-        $display("TIMEOUT - simulation hung");
+        $display("timeout - simulation hung");
         $finish;
     end
 endmodule
