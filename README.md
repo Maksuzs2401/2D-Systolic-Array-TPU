@@ -36,6 +36,11 @@ It is a 16x16 Systolic Array unit for General Matrix Multiplication (GEMM). It i
 ---
 
 ## ARCHITECTURE (Module-by-Module Explanation)
+
+<img width="1000" height="500" alt="micro_arch" src="https://github.com/user-attachments/assets/cc3695e8-bfcc-4c0b-9ea1-67a8461f2514" />
+
+---
+
 ### 1. `config.vh` - Global Parameters
 It is a central header file the defines all the constants, though only few were used in final design. 
 
